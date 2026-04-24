@@ -1,6 +1,6 @@
 [project]
 name = "saju-card"
-version = "0.1.2"
+version = "0.1.3"
 description = "Codex/Claude skill and CLI for generating one vertical Korean saju info card image."
 readme = "SKILL.md"
 requires-python = ">=3.11"

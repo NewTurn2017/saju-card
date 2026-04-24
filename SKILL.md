@@ -1,9 +1,9 @@
 ---
 name: saju-card
-description: Collect Korean 사주 birth/profile details step by step and generate a single vertical MZ-premium Korean 사주 info card image via the `saju-card` CLI, using Codex OAuth `codex responses` plus image_generation with deterministic Korean text overlay. Use when the user wants 사주, 운세, 명리학, 대만신 스타일 풀이, or a one-page saju report card image.
+description: Collect Korean 사주 birth/profile details step by step and generate a single friendly Korean fortune-report card image via the `saju-card` CLI, using easy everyday wording, today/year guidance, a matching profile image, and deterministic Korean text overlay. Use when the user wants 사주, 운세, 오늘운세, 올해운세, or a one-page saju report card image.
 license: MIT
 metadata:
-  version: 0.1.2
+  version: 0.1.3
   author: genie
 ---
 
@@ -13,7 +13,9 @@ metadata:
 
 Use this skill when the user wants a Korean 사주/운세/명리학 card image:
 - one vertical info-card image, not a long multi-page report
-- warm "대만신" voice with MZ-friendly copy
+- friendly fortune-app voice with simple everyday Korean
+- today and year guidance without heavy 명리학 jargon
+- a profile image that matches the reading mood
 - readable Korean text embedded in the image
 - Codex and Claude Code compatible local workflow
 
@@ -34,9 +36,9 @@ Do not invent missing required fields. If birth time is unknown, continue only a
 
 - Treat 사주 as cultural storytelling and self-reflection, not scientific certainty.
 - Do not provide medical, legal, investment, or life-critical claims as facts.
-- Keep the "대만신" tone warm, vivid, and authoritative, but avoid fear-based wording.
-- Explain hard terms simply: `비견(쉽게 말해 내 편이자 경쟁자인 친구 기운)`.
-- If exact 명식 calculation cannot be guaranteed from the supplied data, label it as `간이 명식` or `정밀 보정 필요`.
+- Avoid old-fashioned 무속인/만신 tone. Use bright, practical app-style language.
+- Avoid hard terms unless needed; prefer plain words like "실행력", "관계", "오늘의 팁".
+- Do not place technical notes, model/API wording, or calculation caveats inside the image.
 
 ## CLI usage
 
@@ -95,7 +97,8 @@ The CLI follows the `codex-sangpye` pattern:
 
 1. call `codex responses` with `gpt-5.5` to create structured Korean card copy
 2. call the `image_generation` tool through a chat orchestrator to create a vertical text-free background
-3. overlay all Korean text locally with Pillow for legibility
-4. write `input.json`, `card_plan.json`, `background.png`, and `saju_card.png`
+3. generate a matching profile image
+4. overlay all Korean text locally with Pillow for legibility
+5. write `input.json`, `card_plan.json`, `profile.png`, `background.png`, and `saju_card.png`
 
 Do not invoke this skill repeatedly for the same request unless the user asks for another version.
