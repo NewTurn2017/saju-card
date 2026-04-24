@@ -1,0 +1,9 @@
+interface:
+  display_name: "Saju Card"
+  short_description: "한국어 사주 정보를 한 장의 카드 이미지로 생성"
+  brand_color: "#FF6B57"
+  default_prompt: "Use $saju-card to collect my birth details step by step and generate a Korean saju card image."
+
+policy:
+  allow_implicit_invocation: true
+
