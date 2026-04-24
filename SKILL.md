@@ -3,7 +3,7 @@ name: saju-card
 description: Collect Korean 사주 birth/profile details step by step and generate a single vertical MZ-premium Korean 사주 info card image via the `saju-card` CLI, using Codex OAuth `codex responses` plus image_generation with deterministic Korean text overlay. Use when the user wants 사주, 운세, 명리학, 대만신 스타일 풀이, or a one-page saju report card image.
 license: MIT
 metadata:
-  version: 0.1.0
+  version: 0.1.1
   author: genie
 ---
 
@@ -39,6 +39,12 @@ Do not invent missing required fields. If birth time is unknown, continue only a
 - If exact 명식 calculation cannot be guaranteed from the supplied data, label it as `간이 명식` or `정밀 보정 필요`.
 
 ## CLI usage
+
+One-shot install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NewTurn2017/saju-card/main/install.sh | bash
+```
 
 If the CLI is installed:
 
