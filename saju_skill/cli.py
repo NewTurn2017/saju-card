@@ -125,6 +125,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _collect_user_info(args: argparse.Namespace) -> dict[str, Any]:
+    if not args.no_bg_image and any(value % 16 != 0 for value in args.size):
+        raise ValueError("--size values must both be divisible by 16 for image_generation")
+
     interactive = sys.stdin.isatty()
     name = args.name or (_ask_required("이름") if interactive else None)
     birth = args.birth or (_ask_required("생년월일시 (예: 1994년 3월 20일 오전 9시 30분, 양력)") if interactive else None)
@@ -265,4 +268,3 @@ def _stderr(message: str) -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

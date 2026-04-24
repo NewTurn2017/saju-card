@@ -3,7 +3,7 @@ name: saju-card
 description: Collect Korean 사주 birth/profile details step by step and generate a single vertical MZ-premium Korean 사주 info card image via the `saju-card` CLI, using Codex OAuth `codex responses` plus image_generation with deterministic Korean text overlay. Use when the user wants 사주, 운세, 명리학, 대만신 스타일 풀이, or a one-page saju report card image.
 license: MIT
 metadata:
-  version: 0.1.1
+  version: 0.1.2
   author: genie
 ---
 

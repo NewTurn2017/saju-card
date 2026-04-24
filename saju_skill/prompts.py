@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 MODEL = "gpt-5.5"
-DEFAULT_SIZE = (1080, 1920)
+DEFAULT_SIZE = (1088, 1920)
 
 
 SAJU_PLAN_SYSTEM_PROMPT = """
@@ -69,7 +69,7 @@ JSON schema:
       "accent": "#FF6B57",
       "subtle": "#6F7D8C"
     },
-    "background_prompt": "텍스트 없는 1080x1920 세로 배경 생성용 영어 프롬프트"
+    "background_prompt": "텍스트 없는 1088x1920 세로 배경 생성용 영어 프롬프트"
   }
 }
 
@@ -80,7 +80,7 @@ Return JSON only.
 
 
 BACKGROUND_PROMPT_FALLBACK = """
-1080x1920 vertical premium Korean saju fortune-card background, no readable text,
+1088x1920 vertical premium Korean saju fortune-card background, no readable text,
 no letters, no numbers, modern MZ editorial mood, warm ivory paper panels,
 midnight ink backdrop, subtle celestial chart lines, soft talisman geometry,
 small coral and jade accents, trustworthy calm atmosphere, clean whitespace for
