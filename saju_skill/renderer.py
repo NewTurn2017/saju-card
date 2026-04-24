@@ -310,7 +310,7 @@ def _draw_footer(
 ) -> None:
     footer = str((plan.get("closing") or {}).get("footer", "오늘의 작은 선택이 내일의 운을 만들어요."))
     _line(draw, (box[0], box[1], box[2], box[1]), "#D7C9B6")
-    _text(draw, (box[0], box[1] + 22), f"✦ {footer}", fonts.body_bold, _hex(palette["ink"]), box[2] - box[0], 40, align="center")
+    _text(draw, (box[0], box[1] + 22), f"* {footer}", fonts.body_bold, _hex(palette["ink"]), box[2] - box[0], 40, align="center")
 
 
 def _load_background(background_path: Path | None, size: tuple[int, int], palette: dict[str, str]) -> Image.Image:

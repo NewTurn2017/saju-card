@@ -3,7 +3,7 @@ name: saju-card
 description: Collect Korean 사주 birth/profile details step by step and generate a single friendly Korean fortune-report card image via the `saju-card` CLI, using easy everyday wording, today/year guidance, a matching profile image, and deterministic Korean text overlay. Use when the user wants 사주, 운세, 오늘운세, 올해운세, or a one-page saju report card image.
 license: MIT
 metadata:
-  version: 0.1.3
+  version: 0.1.4
   author: genie
 ---
 

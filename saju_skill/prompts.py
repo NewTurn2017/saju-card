@@ -4,7 +4,7 @@ from __future__ import annotations
 
 MODEL = "gpt-5.5"
 DEFAULT_SIZE = (1472, 1856)
-AVATAR_SIZE = (512, 512)
+AVATAR_SIZE = (1024, 1024)
 
 
 SAJU_PLAN_SYSTEM_PROMPT = """
@@ -21,6 +21,8 @@ SAJU_PLAN_SYSTEM_PROMPT = """
 - 말투는 밝고 다정한 운세 앱 톤: "~해요", "~좋아요", "~추천해요".
 - 의료, 법률, 투자, 생명 안전 판단은 단정하지 말고 생활 팁 수준으로 쓴다.
 - 한 줄은 짧게. 카드 안에 들어가므로 문장은 밀도 있게 쓴다.
+- profile.avatar_prompt는 반드시 캐릭터/마스코트/일러스트 스타일로 쓴다.
+- profile.avatar_prompt에 photorealistic, realistic portrait, real person, photo, face detail 같은 실사 인물 표현을 넣지 않는다.
 
 반드시 raw JSON object만 반환한다. 마크다운, 코드펜스, 설명 문장은 금지다.
 
@@ -32,7 +34,7 @@ JSON schema:
   "profile": {
     "badge": "한 줄 요약 26자 이내",
     "archetype": "예: 전략형 리더",
-    "avatar_prompt": "텍스트 없는 512x512 프로필 이미지용 영어 프롬프트"
+    "avatar_prompt": "텍스트 없는 1024x1024 캐릭터/마스코트 프로필 이미지용 영어 프롬프트"
   },
   "saju_grid": [
     {"label": "시주", "top": "壬", "top_element": "수", "bottom": "子", "bottom_element": "수"},
@@ -107,7 +109,8 @@ no letters, no numbers, enough empty space for Korean text overlay.
 
 
 AVATAR_PROMPT_FALLBACK = """
-512x512 square profile avatar for a Korean saju report, friendly modern character
-illustration, cream background, bold black outline, simple MZ app icon style,
-fortune-inspired symbolic accessory, no readable text, no letters, no numbers.
+1024x1024 square profile avatar for a Korean saju report, friendly modern mascot
+or character illustration, non-photorealistic, no real person, no realistic portrait,
+cream background, bold black outline, simple MZ app icon style, fortune-inspired
+symbolic accessory, no readable text, no letters, no numbers.
 """.strip()
