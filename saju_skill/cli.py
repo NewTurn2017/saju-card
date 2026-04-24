@@ -6,18 +6,19 @@ import json
 import secrets
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from saju_skill import __version__
+from saju_skill.bazi import build_bazi_context
 from saju_skill.codex_client import CodexAuthError, CodexCallError, CodexClient, write_bytes
 from saju_skill.prompts import (
-    AVATAR_PROMPT_FALLBACK,
-    AVATAR_SIZE,
-    BACKGROUND_PROMPT_FALLBACK,
     DEFAULT_SIZE,
+    FINAL_CARD_IMAGE_INSTRUCTIONS,
     MODEL,
     SAJU_PLAN_SYSTEM_PROMPT,
+    build_final_card_prompt,
 )
 from saju_skill.renderer import render_card
 
@@ -43,8 +44,6 @@ def main() -> int:
     input_path = output_dir / "input.json"
     plan_path = output_dir / "card_plan.json"
     prompt_path = output_dir / "card_prompt.txt"
-    background_path = output_dir / "background.png"
-    avatar_path = output_dir / "profile.png"
     card_path = output_dir / "saju_card.png"
 
     try:
@@ -58,45 +57,30 @@ def main() -> int:
         _stderr("준비 상태 확인 중...")
         client = CodexClient(codex_bin=args.codex_bin)
         _stderr("      OK")
-        _stderr("      [1/4] 사주 보고서 내용 정리 중...")
+        _stderr("      [1/2] 사주 보고서 내용 정리 중...")
         plan = _build_plan(client, user_info, model=args.model)
         plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
-        prompt = _background_prompt(plan)
+        prompt = build_final_card_prompt(plan, user_info, size=tuple(args.size))
         prompt_path.write_text(prompt, encoding="utf-8")
 
-        avatar_for_render = None
         if args.no_bg_image:
-            _stderr("      [2/4] 이미지 생성 생략: 로컬 스타일 사용")
-            bg_for_render = None
-        else:
-            _stderr("      [2/4] 프로필 이미지 생성 중...")
-            avatar_bytes = client.generate_image(
-                orchestrator_model=args.model,
-                prompt=_avatar_prompt(plan),
-                size=AVATAR_SIZE,
-                quality=args.quality,
+            _stderr("      [2/2] 이미지 생성 생략: 로컬 확인용 카드 렌더링")
+            render_card(
+                plan,
+                card_path,
+                background_path=None,
+                size=tuple(args.size),
             )
-            write_bytes(avatar_path, avatar_bytes)
-            avatar_for_render = avatar_path
-
-            _stderr("      [3/4] 보고서 배경 생성 중...")
-            bg_bytes = client.generate_image(
+        else:
+            _stderr("      [2/2] 완성 사주 포토 카드 이미지 생성 중...")
+            card_bytes = client.generate_image(
                 orchestrator_model=args.model,
                 prompt=prompt,
                 size=tuple(args.size),
                 quality=args.quality,
+                instructions=FINAL_CARD_IMAGE_INSTRUCTIONS,
             )
-            write_bytes(background_path, bg_bytes)
-            bg_for_render = background_path
-
-        _stderr("      [4/4] 한글 텍스트 카드 렌더링 중...")
-        render_card(
-            plan,
-            card_path,
-            background_path=bg_for_render,
-            avatar_path=avatar_for_render,
-            size=tuple(args.size),
-        )
+            write_bytes(card_path, card_bytes)
     except CodexAuthError as e:
         _stderr(f"error: {e}")
         return EXIT_AUTH
@@ -118,8 +102,7 @@ def main() -> int:
         "plan_path": str(plan_path),
         "input_path": str(input_path),
         "prompt_path": str(prompt_path),
-        "background": str(background_path) if background_path.exists() else None,
-        "avatar": str(avatar_path) if avatar_path.exists() else None,
+        "background": None,
         "elapsed_sec": elapsed,
     }
     print(json.dumps(payload, ensure_ascii=False))
@@ -198,7 +181,9 @@ def _collect_user_info(args: argparse.Namespace) -> dict[str, Any]:
         "birth_place": (birth_place or "").strip() or None,
         "interests": [v.strip() for v in interests if v.strip()],
         "questions": [v.strip() for v in questions if v.strip()][:5],
+        "report_date": datetime.now().strftime("%Y-%m-%d"),
         "tone": "friendly fortune app + easy Korean + no technical wording",
+        "bazi": build_bazi_context({"birth": birth.strip(), "calendar": calendar}),
     }
 
     if interactive and not args.yes:
@@ -217,7 +202,9 @@ def _prepare_output(args: argparse.Namespace) -> tuple[Path, str]:
 
 def _build_plan(client: CodexClient, user_info: dict[str, Any], *, model: str) -> dict[str, Any]:
     user_text = (
-        "다음 사용자 정보로 사주 카드용 JSON을 만들어라. 반드시 json object만 반환해라.\n"
+        "다음 사용자 정보와 계산된 사주 명식을 바탕으로 사주 보고서용 JSON을 만들어라. "
+        "명식은 반드시 bazi 값을 기준으로 해석하고, 추측으로 다른 명식을 만들지 마라. "
+        "반드시 json object만 반환해라.\n"
         + json.dumps(user_info, ensure_ascii=False, indent=2)
     )
     raw = client.call_responses(
@@ -253,7 +240,7 @@ def _normalize_plan(plan: dict[str, Any], user_info: dict[str, Any]) -> dict[str
     plan.setdefault("profile", {
         "badge": "기준을 세우고 기회를 만드는 타입",
         "archetype": "실행형 리더",
-        "avatar_prompt": AVATAR_PROMPT_FALLBACK,
+        "avatar_prompt": "",
     })
     plan.setdefault("closing", {
         "summary": "꾸준함과 신뢰를 바탕으로 좋은 흐름을 키우는 타입이에요.",
@@ -261,19 +248,58 @@ def _normalize_plan(plan: dict[str, Any], user_info: dict[str, Any]) -> dict[str
         "lucky_keywords": ["신뢰", "성장", "실행", "균형"],
         "footer": "오늘의 작은 선택이 내일의 운을 만들어요.",
     })
+    _apply_bazi(plan, user_info.get("bazi") or {})
     return plan
 
 
-def _background_prompt(plan: dict[str, Any]) -> str:
-    design = plan.get("design") or {}
-    prompt = str(design.get("background_prompt") or "").strip()
-    return prompt or BACKGROUND_PROMPT_FALLBACK
+def _apply_bazi(plan: dict[str, Any], bazi: dict[str, Any]) -> None:
+    if bazi.get("status") != "ok":
+        return
+    pillars = bazi.get("pillars") or []
+    by_label = {p.get("label"): p for p in pillars if isinstance(p, dict)}
+    order = ["시주", "일주(나)", "월주", "년주"]
+    grid = []
+    for label in order:
+        p = by_label.get(label) or {}
+        grid.append({
+            "label": label,
+            "top": p.get("gan", "?"),
+            "top_element": p.get("gan_element", ""),
+            "bottom": p.get("zhi", "?"),
+            "bottom_element": p.get("zhi_element", ""),
+        })
+    plan["saju_grid"] = grid
+    day = bazi.get("day_master") or {}
+    if day:
+        keywords = _day_keywords(day.get("gan", ""), bazi.get("element_counts") or {})
+        plan["day_master"] = f"일간(나): {day.get('gan', '?')}{day.get('zhi', '')} | 성향 키워드: {keywords}"
+    counts = bazi.get("element_counts") or {}
+    if counts:
+        labels = {"목": "성장", "화": "표현", "토": "중심", "금": "판단", "수": "지혜"}
+        plan["elements"] = [
+            {"name": name, "score": int(counts.get(name, 0)), "label": labels[name]}
+            for name in ["목", "화", "토", "금", "수"]
+        ]
 
 
-def _avatar_prompt(plan: dict[str, Any]) -> str:
-    profile = plan.get("profile") or {}
-    prompt = str(profile.get("avatar_prompt") or "").strip()
-    return prompt or AVATAR_PROMPT_FALLBACK
+def _day_keywords(day_gan: str, counts: dict[str, Any]) -> str:
+    base = {
+        "甲": "성장, 추진, 방향성",
+        "乙": "유연함, 감각, 관계",
+        "丙": "표현, 활력, 확장",
+        "丁": "집중, 감성, 섬세함",
+        "戊": "안정, 책임, 중심",
+        "己": "현실감, 돌봄, 조율",
+        "庚": "판단, 결단, 구조화",
+        "辛": "완성도, 기준, 섬세함",
+        "壬": "사고력, 이동, 흐름",
+        "癸": "관찰, 감각, 지혜",
+    }.get(day_gan, "기준, 실행, 균형")
+    if int(counts.get("금", 0) or 0) >= 2:
+        return "판단력, 계약감, 구조화"
+    if int(counts.get("토", 0) or 0) >= 2:
+        return "책임감, 안정감, 실행력"
+    return base
 
 
 def _ask_required(label: str) -> str:

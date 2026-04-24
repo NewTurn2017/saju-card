@@ -1,9 +1,9 @@
 ---
 name: saju-card
-description: Collect Korean 사주 birth/profile details step by step and generate a single friendly Korean fortune-report card image via the `saju-card` CLI, using easy everyday wording, today/year guidance, a matching profile image, and deterministic Korean text overlay. Use when the user wants 사주, 운세, 오늘운세, 올해운세, or a one-page saju report card image.
+description: Collect Korean 사주 birth/profile details step by step, calculate the actual four pillars, and generate one premium glossy Korean saju photo-card image via the `saju-card` CLI, using easy everyday wording, today/year guidance, a built-in profile illustration, small situational cartoon cuts, and one-shot final image generation. Use when the user wants 사주, 운세, 오늘운세, 올해운세, or a one-page saju report card image.
 license: MIT
 metadata:
-  version: 0.1.4
+  version: 0.2.0
   author: genie
 ---
 
@@ -15,7 +15,8 @@ Use this skill when the user wants a Korean 사주/운세/명리학 card image:
 - one vertical info-card image, not a long multi-page report
 - friendly fortune-app voice with simple everyday Korean
 - today and year guidance without heavy 명리학 jargon
-- a profile image that matches the reading mood
+- one premium glossy physical photo-card style image
+- one built-in profile illustration plus small situational cartoon cuts
 - readable Korean text embedded in the image
 - Codex and Claude Code compatible local workflow
 
@@ -39,6 +40,9 @@ Do not invent missing required fields. If birth time is unknown, continue only a
 - Avoid old-fashioned 무속인/만신 tone. Use bright, practical app-style language.
 - Avoid hard terms unless needed; prefer plain words like "실행력", "관계", "오늘의 팁".
 - Do not place technical notes, model/API wording, or calculation caveats inside the image.
+- Calculate the four pillars first and base the reading on that result.
+- Do not foreground 한자 명식표 in the final card. Use the calculated 명식 internally, then explain it in plain Korean.
+- Prefer premium glossy photo-card visuals: laminated shine, subtle holographic foil, sparkles, and crisp Korean typography.
 
 ## CLI usage
 
@@ -95,10 +99,12 @@ Show the user:
 
 The CLI follows the `codex-sangpye` pattern:
 
-1. call `codex responses` with `gpt-5.5` to create structured Korean card copy
-2. call the `image_generation` tool through a chat orchestrator to create a vertical text-free background
-3. generate a matching profile image
-4. overlay all Korean text locally with Pillow for legibility
-5. write `input.json`, `card_plan.json`, `profile.png`, `background.png`, and `saju_card.png`
+1. calculate the user's four pillars locally
+2. call `codex responses` with `gpt-5.5` as a top-tier saju reader to create structured Korean card copy from that calculation
+3. turn that copy into one detailed final-image prompt
+4. call the `image_generation` tool once to create the finished vertical card, including Korean text, profile illustration, sparkles, and small contextual cartoon cuts
+5. write `input.json`, `card_plan.json`, `card_prompt.txt`, and `saju_card.png`
+
+`--no-bg-image` is a local fallback/debug mode only. The default path should be one-shot final image generation, not separate profile generation or local text compositing.
 
 Do not invoke this skill repeatedly for the same request unless the user asks for another version.

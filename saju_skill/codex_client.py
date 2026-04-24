@@ -71,14 +71,12 @@ class CodexClient:
         prompt: str,
         size: tuple[int, int],
         quality: str = "high",
+        instructions: str | None = None,
     ) -> bytes:
         payload = {
             "model": orchestrator_model,
-            "instructions": (
-                "Create a premium vertical Korean fortune-card background. "
-                "No readable text, no letters, no numbers. Leave clean whitespace "
-                "for later text overlay."
-            ),
+            "instructions": instructions
+            or "Create one finished premium vertical Korean fortune-card image with crisp readable text.",
             "input": [
                 {
                     "role": "user",
@@ -165,4 +163,3 @@ def write_bytes(path: Path, data: bytes) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
     return path
-

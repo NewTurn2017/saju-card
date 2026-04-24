@@ -61,7 +61,16 @@ def render_card(
     col_w = (right_w - gap) // 2
     right_col_x = right_x + col_w + gap
 
-    _draw_profile(overlay, draw, plan, (m, 38, m + left_w, 690), fonts, palette, avatar_path)
+    _draw_profile(
+        overlay,
+        draw,
+        plan,
+        (m, 38, m + left_w, 690),
+        fonts,
+        palette,
+        avatar_path,
+        use_local_avatar=background_path is None,
+    )
     _draw_saju_grid(draw, plan, (right_x, 38, width - m, 515), fonts, palette)
     _draw_personality(draw, plan, (m, 725, m + left_w, 1280), fonts, palette)
     _draw_elements(draw, plan, (right_x, 545, right_x + col_w, 980), fonts, palette)
@@ -100,16 +109,20 @@ def _draw_profile(
     fonts: FontSet,
     palette: dict[str, str],
     avatar_path: Path | None,
+    *,
+    use_local_avatar: bool,
 ) -> None:
     x0, y0, x1, y1 = box
-    _panel(draw, box, radius=22, fill=_hex(palette["paper"], 230), outline=_hex("#DDD0BC"))
+    panel_alpha = 230 if use_local_avatar else 70
+    _panel(draw, box, radius=22, fill=_hex(palette["paper"], panel_alpha), outline=_hex("#DDD0BC"))
     _text(draw, (x0 + 26, y0 + 26), str(plan.get("title", "나의 사주 보고서")), fonts.title, _hex(palette["ink"]), x1 - x0 - 52, 66)
     _text(draw, (x0 + 28, y0 + 94), str(plan.get("subtitle", "내가 가진 기질과 오늘/올해의 흐름")), fonts.subtitle, _hex(palette["ink"]), x1 - x0 - 56, 32, align="center")
     _sparkles(draw, x0 + 30, y0 + 118, palette)
 
-    avatar_box = (x0 + 82, y0 + 155, x1 - 82, y0 + 455)
-    avatar = _avatar(avatar_path, (avatar_box[2] - avatar_box[0], avatar_box[3] - avatar_box[1]), palette)
-    layer.alpha_composite(avatar, (avatar_box[0], avatar_box[1]))
+    if use_local_avatar or avatar_path:
+        avatar_box = (x0 + 82, y0 + 155, x1 - 82, y0 + 455)
+        avatar = _avatar(avatar_path, (avatar_box[2] - avatar_box[0], avatar_box[3] - avatar_box[1]), palette)
+        layer.alpha_composite(avatar, (avatar_box[0], avatar_box[1]))
 
     profile = plan.get("profile") or {}
     _panel(draw, (x0 + 24, y1 - 118, x1 - 24, y1 - 28), radius=12, fill=_hex("#F4EADB", 240), outline=_hex("#D8C9B5"))
@@ -323,7 +336,7 @@ def _load_background(background_path: Path | None, size: tuple[int, int], palett
     if background_path and background_path.exists():
         with Image.open(background_path) as img:
             img = _cover(img.convert("RGB"), size).filter(ImageFilter.GaussianBlur(radius=0.4))
-        base = Image.blend(base, img, 0.18)
+        base = Image.blend(base, img, 0.34)
     return base
 
 
